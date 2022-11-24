@@ -31,5 +31,9 @@ internal class StringCalculatorTest: FunSpec({
         shouldThrow<RuntimeException> {
             cal.add("1:-1")
         }
+
+        shouldThrow<RuntimeException> {
+            cal.add("-100")
+        }
     }
 })
