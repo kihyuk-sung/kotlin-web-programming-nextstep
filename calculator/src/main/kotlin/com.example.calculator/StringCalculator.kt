@@ -10,13 +10,17 @@ class StringCalculator {
     fun add(text: String?): Int {
         if (text.isNullOrEmpty()) return 0
 
-        val numbers = CUSTOM_DELIMITERS_PATTERN.find(text)
+        val numbers = (CUSTOM_DELIMITERS_PATTERN.find(text)
             ?.let {
                 val (delimiter, str) = it.destructured
                 str.split(delimiter)
             }
-            ?: text.split(COMMA, COLON)
+            ?: text.split(COMMA, COLON)).map(String::toInt)
 
-        return numbers.sumOf(String::toInt)
+        if (numbers.any { it < 0 }) {
+            throw RuntimeException("음수 존재")
+        }
+
+        return numbers.sum()
     }
 }
