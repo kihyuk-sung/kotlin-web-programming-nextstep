@@ -1,7 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+object Version {
+    const val KOTEST = "5.5.4"
+}
+
 plugins {
-    id("application")
     kotlin("jvm") version "1.6.21"
 }
 
@@ -18,10 +21,11 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+dependencies {
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    testImplementation("io.kotest:kotest-runner-junit5:${Version.KOTEST}")
 }
 
-application {
-    mainClass.set("com.example.calculator.CalculatorAppKt")
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
