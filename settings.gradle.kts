@@ -10,3 +10,4 @@
 
 rootProject.name = "kotlin-web-programming-nextstep"
 include("calculator")
+include("web-application-server")
