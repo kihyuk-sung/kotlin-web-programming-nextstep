@@ -18,20 +18,24 @@ class RequestHandler(
 
         try {
             BufferedReader(InputStreamReader(connection.getInputStream())).use { reader ->
-                val firstLine: String? = reader.readLine()
+                val requestHeader = generateSequence {
+                    val input: String? = reader.readLine()
+                    log.info(input)
+                    when(input) {
+                        "" -> null
+                        else -> input
+                    }
+                }.toList()
+
+                val firstLine = requestHeader.firstOrNull()
                 if (firstLine == null) {
                     connection.responseHello()
                     return@use
                 }
                 log.info(firstLine)
-                while (true) {
-                    val line: String = reader.readLine() ?: break
-                    if (line == "") break
-                    log.info(line)
-                }
                 val (method, path) = parseFirstLine(firstLine)
                 if (method == "GET") {
-                    val body = Files.readAllBytes( File("./webapp${path}").toPath())
+                    val body = Files.readAllBytes(File("./webapp${path}").toPath())
                     connection.responseBody(body)
                     return@use
                 }
