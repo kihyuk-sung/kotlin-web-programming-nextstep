@@ -1,5 +1,6 @@
 package org.example.webserver
 
+import org.example.webserver.utils.parseQueryString
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.*
@@ -8,11 +9,11 @@ import java.nio.file.Files
 
 class RequestHandler(
     private val connection: Socket,
+    private val users: MutableMap<String, User>,
 ): Thread() {
     companion object {
         val log: Logger = LoggerFactory.getLogger(RequestHandler::class.java)
     }
-
     override fun run() {
         log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.inetAddress, connection.port)
 
@@ -35,7 +36,11 @@ class RequestHandler(
                 log.info(firstLine)
                 val (method, path) = parseFirstLine(firstLine)
                 if (method == "GET") {
-                    val body = Files.readAllBytes(File("./webapp${path}").toPath())
+                    val body = if (path.startsWith("/user/create")) {
+                        saveUser(path = path)
+                    } else {
+                        Files.readAllBytes(File("./webapp${path}").toPath())
+                    }
                     connection.responseBody(body)
                     return@use
                 }
@@ -90,5 +95,17 @@ class RequestHandler(
         } catch (e: IOException) {
             log.error(e.message)
         }
+    }
+
+    private fun saveUser(path: String): ByteArray {
+        val query = parseQueryString(path)
+        val userId = query["userId"]?.firstOrNull() ?: return "Fail".toByteArray()
+        val password = query["password"]?.firstOrNull() ?: return "Fail".toByteArray()
+        val name = query["name"]?.firstOrNull() ?: return "Fail".toByteArray()
+
+        val user = User(userId = userId, password = password, name = name)
+        users[userId] = user
+
+        return "Success\n$user".toByteArray()
     }
 }
